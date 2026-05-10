@@ -31,7 +31,7 @@ def create_vectorstore(chunks: list[Document]):
     if not chunks:
         raise ValueError("No chunks provided to create vectorstore")
     embedder = GoogleGenerativeAIEmbeddings(
-        model="models/embedding-001",
+        model="gemini-embedding-2",
         google_api_key=GOOGLE_API_KEY,
     )
     return Chroma.from_documents(
