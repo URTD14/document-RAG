@@ -1,9 +1,6 @@
 """Streamlit UI for the RAG Chatbot."""
 
 import streamlit as st
-from typing import Optional
-from langchain_chroma import Chroma
-
 from src import loader
 from src import chain as rag_chain
 from src.config import GROQ_API_KEY, GOOGLE_API_KEY, SUPPORTED_FILE_TYPES
@@ -12,9 +9,9 @@ st.set_page_config(page_title="RAG Chatbot", page_icon="🤖", layout="wide")
 st.title("🤖 RAG Chatbot — Chat with Your Documents")
 
 if "vectorstore" not in st.session_state:
-    st.session_state.vectorstore: Optional[Chroma] = None
+    st.session_state.vectorstore = None
 if "chat_history" not in st.session_state:
-    st.session_state.chat_history: list[dict] = []
+    st.session_state.chat_history = []
 if "docs_loaded" not in st.session_state:
     st.session_state.docs_loaded = False
 
@@ -33,7 +30,7 @@ def validate_keys():
 
 
 @st.cache_resource
-def build_vectorstore(_docs: list):
+def build_vectorstore(_docs):
     chunks = loader.chunk_documents(_docs)
     return loader.create_vectorstore(chunks)
 

@@ -10,8 +10,6 @@ from langchain_community.document_loaders import (
 )
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
-from langchain_chroma import Chroma
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from src.config import CHUNK_SIZE, CHUNK_OVERLAP, GOOGLE_API_KEY, CHROMA_COLLECTION_NAME
 
 
@@ -24,7 +22,10 @@ def chunk_documents(documents: list[Document]) -> list[Document]:
     return splitter.split_documents(documents)
 
 
-def create_vectorstore(chunks: list[Document]) -> Chroma:
+def create_vectorstore(chunks: list[Document]):
+    from langchain_chroma import Chroma
+    from langchain_google_genai import GoogleGenerativeAIEmbeddings
+
     if not GOOGLE_API_KEY:
         raise ValueError("GOOGLE_API_KEY not set.")
     if not chunks:

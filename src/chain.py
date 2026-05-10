@@ -1,24 +1,18 @@
 """Groq RAG chain — semantic search + LLM answer."""
 
-from typing import Literal
 from langchain_core.documents import Document
-from langchain_core.runnables import RunnablePassthrough
 from langchain_groq import ChatGroq
-from langchain_chroma import Chroma
 from src.config import (
     GROQ_API_KEY,
-    GOOGLE_API_KEY,
     LLM_MODEL,
     LLM_TEMPERATURE,
     TOP_K_RESULTS,
 )
 
 
-def query_documents(vectorstore: Chroma, question: str) -> tuple[str, list[Document]]:
+def query_documents(vectorstore, question: str) -> tuple[str, list[Document]]:
     if not GROQ_API_KEY:
         raise ValueError("GROQ_API_KEY not set.")
-    if not GOOGLE_API_KEY:
-        raise ValueError("GOOGLE_API_KEY not set.")
 
     llm = ChatGroq(
         api_key=GROQ_API_KEY,
