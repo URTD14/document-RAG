@@ -1,0 +1,25 @@
+# API Keys (keep these private)
+GROQ_API_KEY=your_groq_api_key_here
+GOOGLE_API_KEY=your_google_api_key_here
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment
+.env
+
+# Streamlit
+.streamlit/
+
+# ChromaDB (in-memory, no persistent storage needed)
+chroma_data/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Virtual env
+venv/
+.venv/
