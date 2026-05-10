@@ -13,8 +13,13 @@ __pycache__/
 # Streamlit
 .streamlit/
 
-# ChromaDB (in-memory, no persistent storage needed)
-chroma_data/
+# ChromaDB in-memory data
+None/
+
+# Test files
+*.pdf
+*.csv
+*.txt
 
 # OS
 .DS_Store
