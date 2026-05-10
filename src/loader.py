@@ -70,3 +70,42 @@ def create_vectorstore(chunks: list[Document]):
         embedding=embedder,
         collection_name=CHROMA_COLLECTION_NAME,
     )
+
+
+def load_file(file_path: str, file_type: str) -> list[Document]:
+    file_type = file_type.lower()
+    if file_type == "pdf":
+        loader = PyPDFLoader(file_path=file_path)
+    elif file_type == "txt":
+        loader = TextLoader(file_path=file_path, encoding="utf-8")
+    elif file_type == "csv":
+        loader = CSVLoader(file_path=file_path, encoding="utf-8")
+    else:
+        raise ValueError(f"Unsupported file type: {file_type}")
+    try:
+        return loader.load()
+    except Exception as e:
+        raise RuntimeError(f"Failed to load {file_type} file: {e}")
+
+
+def load_and_process_uploaded_file(uploaded_file) -> list[Document]:
+    file_ext = uploaded_file.name.rsplit(".", 1)[-1].lower()
+    with tempfile.NamedTemporaryFile(delete=False, suffix=f".{file_ext}") as tmp:
+        tmp.write(uploaded_file.read())
+        tmp_path = tmp.name
+    try:
+        docs = load_file(tmp_path, file_ext)
+        return docs
+    finally:
+        try:
+            os.unlink(tmp_path)
+        except Exception:
+            pass
+
+
+def load_url(url: str) -> list[Document]:
+    try:
+        loader = UnstructuredURLLoader(urls=[url])
+        return loader.load()
+    except Exception as e:
+        raise RuntimeError(f"Failed to load URL: {e}")
