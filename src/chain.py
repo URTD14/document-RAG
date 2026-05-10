@@ -1,16 +1,11 @@
 """Groq RAG chain — semantic search + LLM answer."""
 
-from langchain_core.documents import Document
-from langchain_groq import ChatGroq
-from src.config import (
-    GROQ_API_KEY,
-    LLM_MODEL,
-    LLM_TEMPERATURE,
-    TOP_K_RESULTS,
-)
 
+def query_documents(vectorstore, question: str):
+    from langchain_groq import ChatGroq
+    from langchain_core.documents import Document
+    from src.config import GROQ_API_KEY, LLM_MODEL, LLM_TEMPERATURE, TOP_K_RESULTS
 
-def query_documents(vectorstore, question: str) -> tuple[str, list[Document]]:
     if not GROQ_API_KEY:
         raise ValueError("GROQ_API_KEY not set.")
 
