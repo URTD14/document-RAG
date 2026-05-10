@@ -38,7 +38,6 @@ def create_vectorstore(chunks: list[Document]):
         documents=chunks,
         embedding=embedder,
         collection_name=CHROMA_COLLECTION_NAME,
-        persist_memory=True,
     )
 
 
