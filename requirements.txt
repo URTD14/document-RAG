@@ -2,6 +2,7 @@ langchain==0.3.13
 langchain-community==0.3.13
 langchain-google-genai
 langchain-groq
+langchain-chroma
 groq
 chromadb
 streamlit
