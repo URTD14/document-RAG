@@ -3,6 +3,7 @@
 import os
 import tempfile
 import httpx
+import chromadb
 from langchain_community.document_loaders import (
     PyPDFLoader,
     TextLoader,
@@ -17,7 +18,7 @@ from src.config import CHUNK_SIZE, CHUNK_OVERLAP, GOOGLE_API_KEY, CHROMA_COLLECT
 
 class GeminiEmbeddings(Embeddings):
     def __init__(
-        self, api_key: str, model: str = "text-embedding-004", batch_size: int = 100
+        self, api_key: str, model: str = "gemini-embedding-001", batch_size: int = 100
     ):
         self.api_key = api_key
         self.model = model
@@ -28,20 +29,21 @@ class GeminiEmbeddings(Embeddings):
         embeddings = []
         for i in range(0, len(texts), self.batch_size):
             batch = texts[i : i + self.batch_size]
-            payload = {
-                "model": f"models/{self.model}",
-                "content": {"parts": [{"text": t} for t in batch]},
-                "task_type": "RETRIEVAL_DOCUMENT",
-            }
-            url = f"{self.base_url}/{self.model}:embedContent?key={self.api_key}"
-            with httpx.Client(timeout=60) as client:
-                resp = client.post(url, json=payload)
-                resp.raise_for_status()
-                data = resp.json()
-                if "embeddings" in data:
-                    embeddings.extend([list(e["values"]) for e in data["embeddings"]])
-                elif "embedding" in data:
-                    embeddings.extend([list(data["embedding"]["values"])])
+            for text in batch:
+                payload = {
+                    "model": f"models/{self.model}",
+                    "content": {"parts": [{"text": text}]},
+                    "task_type": "RETRIEVAL_DOCUMENT",
+                }
+                url = f"{self.base_url}/{self.model}:embedContent?key={self.api_key}"
+                with httpx.Client(timeout=60) as client:
+                    resp = client.post(url, json=payload)
+                    resp.raise_for_status()
+                    data = resp.json()
+                    if "embedding" in data:
+                        embeddings.append(list(data["embedding"]["values"]))
+                    elif "embeddings" in data:
+                        embeddings.append(list(data["embeddings"][0]["values"]))
         return embeddings
 
     def embed_query(self, text: str) -> list[float]:
@@ -64,12 +66,24 @@ def create_vectorstore(chunks: list[Document]):
         raise ValueError("GOOGLE_API_KEY not set.")
     if not chunks:
         raise ValueError("No chunks provided to create vectorstore")
-    embedder = GeminiEmbeddings(api_key=GOOGLE_API_KEY, model="gemini-embedding-001")
-    return Chroma.from_documents(
-        documents=chunks,
-        embedding=embedder,
+    embedder = GeminiEmbeddings(api_key=GOOGLE_API_KEY)
+
+    texts = [c.page_content for c in chunks]
+    metadatas = [c.metadata for c in chunks]
+    embeddings = embedder.embed_documents(texts)
+
+    client = chromadb.PersistentClient(path=None)
+    collection = client.get_or_create_collection(name=CHROMA_COLLECTION_NAME)
+
+    ids = [f"id_{i}" for i in range(len(texts))]
+    collection.add(documents=texts, metadatas=metadatas, embeddings=embeddings, ids=ids)
+
+    vs = Chroma(
+        client=client,
         collection_name=CHROMA_COLLECTION_NAME,
+        embedding_function=embedder,
     )
+    return vs
 
 
 def load_file(file_path: str, file_type: str) -> list[Document]:
